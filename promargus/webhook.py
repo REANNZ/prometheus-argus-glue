@@ -1,10 +1,10 @@
 # Based off https://gitlab.sikt.no/cnaas/mist-argus
 
 from flask import Flask, request
-from promargus.client import handle_alert
-from promargus.parser import parse_alerts
 
 import logging
+import promargus.client
+import promargus.parser
 
 
 app = Flask(__name__)
@@ -15,8 +15,8 @@ app.config.from_envvar("PROM_ARGUS_SETTINGS")
 def webhook():
     req_data = request.get_json()
     app.logger.debug("Payload received: %r", req_data)
-    for alert in parse_alerts(req_data["alerts"]):
-        handle_alert(alert)
+    for alert in promargus.parser.parse_alerts(req_data["alerts"]):
+        promargus.client.handle_alert(alert)
 
     return {"success": True}, 200, {"Content-Type": "application/json"}
 
