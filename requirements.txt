@@ -1,3 +1,4 @@
-python-dateutil
-Flask
-argus-api-client
+python-dateutil==2.8.2
+Flask==3.0.2
+argus-api-client==0.4.3
+gunicorn==21.2.0
