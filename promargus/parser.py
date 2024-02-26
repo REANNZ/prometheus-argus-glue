@@ -43,10 +43,11 @@ def parse_alert(alert):
     current_app.logger.debug("Parsed alert: %s", parsed_alert["description"])
     return
 
-
+# Argus will not allows tags with a camelCase key name.
+# process_tags(tags) converts the key names to snake_case which Argus allows.
 def process_tags(tags):
     clean_tags = {}
-
+    
     for key, value in tags:
         new_key = re.sub("([a-z0-9])([A-Z])", r"\1_\2", key).lower()
         clean_tags[new_key] = value
