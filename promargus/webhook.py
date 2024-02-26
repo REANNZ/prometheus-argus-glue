@@ -4,7 +4,7 @@ from flask import Flask, request
 
 import logging
 import promargus.client
-import promargus.parser
+import traceback
 
 
 app = Flask(__name__)
@@ -15,8 +15,18 @@ app.config.from_envvar("PROM_ARGUS_SETTINGS")
 def webhook():
     req_data = request.get_json()
     app.logger.debug("Payload received: %r", req_data)
-    for alert in promargus.parser.parse_alerts(req_data["alerts"]):
-        promargus.client.handle_alert(alert)
+    try:
+        for alert in req_data["alerts"]:
+            promargus.client.handle_alert(alert)
+    except Exception as error:
+        error_type = type(error).__name__
+        if error_type == 'ClientConnectionError':
+            return {"success": False}, 503, {"Content-Type": "application/json"}
+        elif error_type == 'AuthError':
+            return {"success": False}, 401, {"Content-Type": "application/json"}
+        else:
+            traceback.print_exc()
+            return {"success": False}, 500, {"Content-Type": "application/json"}
 
     return {"success": True}, 200, {"Content-Type": "application/json"}
 
