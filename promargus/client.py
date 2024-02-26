@@ -20,10 +20,11 @@ def handle_alert(alert):
     incident = get_incident(client, parsed_alert["source_incident_id"])
     if parsed_alert["status"] == "resolved":
         resolve_incident(client, incident, parsed_alert)
-    elif incident:
-        update_incident(client, incident, parsed_alert)
-    else:
-        create_incident(client, parsed_alert)
+    if parsed_alert["status"] == "firing":
+        if incident:
+            update_incident(client, incident, parsed_alert)
+        else:
+            create_incident(client, parsed_alert)
 
 
 def get_incident(client, id):
