@@ -34,20 +34,19 @@ def parse_alert(alert):
         "source_incident_id": source_incident_id,
         "start_time": start_time,
         "end_time": (
-            "infinity"
-            if alert["status"] == "firing"
-            else parser.parse(alert["endsAt"])
+            "infinity" if alert["status"] == "firing" else parser.parse(alert["endsAt"])
         ),
     }
 
     current_app.logger.debug("Parsed alert: %s", parsed_alert["description"])
     return parsed_alert
 
+
 # Argus will not allows tags with a camelCase key name.
 # process_tags(tags) converts the key names to snake_case which Argus allows.
 def process_tags(tags):
     clean_tags = {}
-    
+
     for key, value in tags:
         new_key = re.sub("([a-z0-9])([A-Z])", r"\1_\2", key).lower()
         clean_tags[new_key] = value

@@ -59,7 +59,9 @@ def update_incident(client, incident, parsed_alert):
     )
     client.post_incident_event(incident, event)
 
-    current_app.logger.debug("Updating tags for incident: %s", parsed_alert["description"])
+    current_app.logger.debug(
+        "Updating tags for incident: %s", parsed_alert["description"]
+    )
     incident = Incident(
         pk=incident.pk,
         tags=parsed_alert["tags"],

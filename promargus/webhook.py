@@ -9,7 +9,7 @@ import traceback
 
 
 app = Flask(__name__)
-app.config.from_pyfile(os.environ['PROM_ARGUS_SETTINGS'])
+app.config.from_pyfile(os.environ["PROM_ARGUS_SETTINGS"])
 
 
 @app.route("/", methods=["POST"])
@@ -21,9 +21,9 @@ def webhook():
             promargus.client.handle_alert(alert)
     except Exception as error:
         error_type = type(error).__name__
-        if error_type == 'ClientConnectionError':
+        if error_type == "ClientConnectionError":
             return {"success": False}, 503, {"Content-Type": "application/json"}
-        elif error_type == 'AuthError':
+        elif error_type == "AuthError":
             return {"success": False}, 401, {"Content-Type": "application/json"}
         else:
             traceback.print_exc()
