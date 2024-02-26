@@ -4,45 +4,44 @@ from flask import current_app
 import re
 
 
-def parse_alerts(alerts):
-    for alert in alerts:
-        start_time = parser.parse(alert["startsAt"])
-        source_incident_id = "%s_%d" % (
-            alert["fingerprint"],
-            int(start_time.timestamp()),
+def parse_alert(alert):
+    start_time = parser.parse(alert["startsAt"])
+    source_incident_id = "%s_%d" % (
+        alert["fingerprint"],
+        int(start_time.timestamp()),
+    )
+
+    tags = {}
+    severity = None
+
+    if isinstance(alert["labels"], dict):
+        current_app.logger.debug("Converting labels to tags for alert")
+        tags = process_tags(alert["labels"].items())
+        current_app.logger.debug("Determining severity")
+        severity = get_severity(tags)
+    if severity is None:
+        severity = current_app.config.get("ARGUS_SEVERITY_DEFAULT")
+        current_app.logger.debug(
+            "No match for severity, applying default severity %s", severity
         )
 
-        tags = {}
-        severity = None
+    parsed_alert = {
+        "status": alert["status"],
+        "level": severity,
+        "description": alert["annotations"]["summary"],
+        "tags": tags,
+        "details_url": alert["generatorURL"],
+        "source_incident_id": source_incident_id,
+        "start_time": start_time,
+        "end_time": (
+            "infinity"
+            if alert["status"] == "firing"
+            else parser.parse(alert["endsAt"])
+        ),
+    }
 
-        if isinstance(alert["labels"], dict):
-            current_app.logger.debug("Converting labels to tags for alert")
-            tags = process_tags(alert["labels"].items())
-            current_app.logger.debug("Determining severity")
-            severity = get_severity(tags)
-        if severity is None:
-            severity = current_app.config.get("ARGUS_SEVERITY_DEFAULT")
-            current_app.logger.debug(
-                "No match for severity, applying default severity %s", severity
-            )
-
-        parsed_alert = {
-            "status": alert["status"],
-            "level": severity,
-            "description": alert["annotations"]["summary"],
-            "tags": tags,
-            "details_url": alert["generatorURL"],
-            "source_incident_id": source_incident_id,
-            "start_time": start_time,
-            "end_time": (
-                "infinity"
-                if alert["status"] == "firing"
-                else parser.parse(alert["endsAt"])
-            ),
-        }
-
-        current_app.logger.debug("Parsed alert: %s", parsed_alert["description"])
-        yield parsed_alert
+    current_app.logger.debug("Parsed alert: %s", parsed_alert["description"])
+    return
 
 
 def process_tags(tags):
