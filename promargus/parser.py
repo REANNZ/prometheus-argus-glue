@@ -20,7 +20,7 @@ def parse_alert(alert):
         current_app.logger.debug("Determining severity")
         severity = get_severity(tags)
     if severity is None:
-        severity = current_app.config.get("ARGUS_SEVERITY_DEFAULT")
+        severity = current_app.config.get("ARGUS_SEVERITY_DEFAULT", 5)
         current_app.logger.debug(
             "No match for severity, applying default severity %s", severity
         )
@@ -57,6 +57,9 @@ def process_tags(tags):
 
 def get_severity(tags):
     severity_config = current_app.config.get("ARGUS_SEVERITY_CONFIG")
+
+    if not severity_config:
+        return None
 
     if not isinstance(severity_config, dict):
         current_app.logger.error("ARGUS_SEVERITY_CONFIG is configured incorrectly")
