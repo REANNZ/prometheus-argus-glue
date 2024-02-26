@@ -41,7 +41,7 @@ def parse_alert(alert):
     }
 
     current_app.logger.debug("Parsed alert: %s", parsed_alert["description"])
-    return
+    return parsed_alert
 
 # Argus will not allows tags with a camelCase key name.
 # process_tags(tags) converts the key names to snake_case which Argus allows.
