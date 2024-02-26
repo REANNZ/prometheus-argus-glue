@@ -3,12 +3,13 @@
 from flask import Flask, request
 
 import logging
+import os
 import promargus.client
 import traceback
 
 
 app = Flask(__name__)
-app.config.from_envvar("PROM_ARGUS_SETTINGS")
+app.config.from_pyfile(os.environ['PROM_ARGUS_SETTINGS'])
 
 
 @app.route("/", methods=["POST"])
