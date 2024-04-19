@@ -32,7 +32,29 @@ def get_incident(client, id):
     return incident
 
 
+# Due to having two monitoring systems, if an alert comes from one but
+# is resolved by another, the start time might be different so the
+# source_incident_id won't match. We can safely assume if an incident
+# is open with the same prefix on the source_incident_id, this is the
+# incident we want to resolve.
+def get_open_incident_by_prefix(client, id):
+    id_prefix = id.split("_")[0]
+    incidents = client.get_incidents(open=True)
+    for incident in incidents:
+        if id_prefix in incident.source_incident_id:
+            return incident
+    return None
+
+
 def resolve_incident(client, incident, parsed_alert):
+    if not incident:
+        current_app.logger.debug(
+            "Incident not found with source id: %s. Checking open incidents",
+            parsed_alert["source_incident_id"],
+        )
+        incident = get_open_incident_by_prefix(
+            client, parsed_alert["source_incident_id"]
+        )
     if not incident:
         current_app.logger.error(
             "Incident not found. Cannot resolve for incident with source id: %s",
