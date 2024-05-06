@@ -12,6 +12,7 @@ def parse_alert(alert):
     )
 
     tags = {}
+    alertname = 'Alert'
     severity = None
 
     if isinstance(alert["labels"], dict):
@@ -19,16 +20,20 @@ def parse_alert(alert):
         tags = process_tags(alert["labels"].items())
         current_app.logger.debug("Determining severity")
         severity = get_severity(tags)
+        alertname = tags.get('alertname', alertname)
+        tags = prune_tags(tags)
     if severity is None:
         severity = current_app.config.get("ARGUS_SEVERITY_DEFAULT", 5)
         current_app.logger.debug(
             "No match for severity, applying default severity %s", severity
         )
 
+    description = alert["annotations"]["summary"]
+
     parsed_alert = {
         "status": alert["status"],
         "level": severity,
-        "description": alert["annotations"]["summary"],
+        "description": f'{alertname}: {description}',
         "tags": tags,
         "details_url": alert["generatorURL"],
         "source_incident_id": source_incident_id,
@@ -72,3 +77,18 @@ def get_severity(tags):
             return severity
 
     return None
+
+
+def prune_tags(tags):
+    pruned_tags = {}
+
+    exclude_labels = current_app.config.get("ARGUS_EXCLUDE_TAGS")
+
+    if exclude_labels is None:
+        return tags
+
+    for key, value in tags.items():
+        if key not in exclude_labels:
+            pruned_tags[key] = value
+
+    return pruned_tags
