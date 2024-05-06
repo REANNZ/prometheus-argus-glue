@@ -81,7 +81,7 @@ def get_severity(tags):
 def prune_tags(tags):
     pruned_tags = {}
 
-    exclude_labels = current_app.config.get("ARGUS_EXCLUDE_LABELS")
+    exclude_labels = current_app.config.get("ARGUS_EXCLUDE_TAGS")
 
     if exclude_labels is None:
         return tags

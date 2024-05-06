@@ -22,7 +22,7 @@ ARGUS_API_TOKEN = "secret"
 #
 # Allows promargus to exclude alert labels from the tags supplied
 # to argus.
-# ARGUS_EXCLUDE_LABELS = [
+# ARGUS_EXCLUDE_TAGS = [
 #     "foo",
 #     "bar",
 #     "bizz",
