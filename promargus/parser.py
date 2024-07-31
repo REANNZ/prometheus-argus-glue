@@ -12,7 +12,7 @@ def parse_alert(alert):
     )
 
     tags = {}
-    alertname = 'Alert'
+    alertname = "Alert"
     severity = None
 
     if isinstance(alert["labels"], dict):
@@ -20,7 +20,7 @@ def parse_alert(alert):
         tags = process_tags(alert["labels"].items())
         current_app.logger.debug("Determining severity")
         severity = get_severity(tags)
-        alertname = tags.get('alertname', alertname)
+        alertname = tags.get("alertname", alertname)
         tags = prune_tags(tags)
     if severity is None:
         severity = current_app.config.get("ARGUS_SEVERITY_DEFAULT", 5)
@@ -33,7 +33,7 @@ def parse_alert(alert):
     parsed_alert = {
         "status": alert["status"],
         "level": severity,
-        "description": f'{alertname}: {description}',
+        "description": f"{alertname}: {description}",
         "tags": tags,
         "details_url": alert["generatorURL"],
         "source_incident_id": source_incident_id,
