@@ -6,6 +6,9 @@ import re
 
 def parse_alert(alert):
     start_time = parser.parse(alert["startsAt"])
+    # fingerprint from prometheus is a hash of the alert that fires. It
+    # is not unique to each instance of that alert firing so we create the
+    # source incident id based of the fingerprint and the time it started.
     source_incident_id = "%s_%d" % (
         alert["fingerprint"],
         int(start_time.timestamp()),
