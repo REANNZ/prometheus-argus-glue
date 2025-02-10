@@ -13,6 +13,17 @@ $ gunicorn --bind 127.0.0.1:5000 promargus.webhook:app
 Debug logging from the app is available if gunicorn is called with
 `--log-level=debug`.
 
+### utility scripts
+
+**`argus-sync`**
+
+Resolves incidents in Argus that don't have a matching alert in Alertmanager.
+If a resolve notification is missed or not sent, it can leave incidents open
+resulting in unnecessary work for users. One common reason for this is silenced
+alerts in Alertmanager, as this also silences resolve notifications.
+
+`argus-sync` uses the same settings file as the webhook.
+
 ## configuration
 
 See `example_settings.py` for configuration params.
