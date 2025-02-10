@@ -13,8 +13,9 @@ import types
 config = {
     "ARGUS_SYNC_SOURCE_NAME": "prometheus",
     "ARGUS_SYNC_RESOLVE_MIN_AGE": 10,
-    "VERBOSE": False
+    "VERBOSE": False,
 }
+
 
 # Adapted from Flask's `Config.from_pyfile`
 def load_config(filename):
@@ -41,28 +42,35 @@ def load_config(filename):
         if k not in config:
             raise RuntimeError(f"Required config value '{k}' not set")
 
+
 def get_am_alerts():
     endpoint = config["ARGUS_SYNC_ALERTMANAGER_URL"] + "/alerts"
     resp = httpx.get(endpoint)
     if resp.status_code != 200:
-        raise RuntimeError(f"Error getting alerts ({resp.status_code} {resp.reason_phrase})")
+        raise RuntimeError(
+            f"Error getting alerts ({resp.status_code} {resp.reason_phrase})"
+        )
     return resp.json()
+
 
 def vprint(msg):
     if config["VERBOSE"]:
         print(msg, file=sys.stderr)
 
-@click.command(help="Resolve incidents that don't have a matching alert in AlertManager")
-@click.option('--config', 'config_path',
-              type=click.Path(exists=True),
-              help="Path to config file")
-@click.option('--dry-run', '-d', is_flag=True,
-              help="Print which actions would be taken")
-@click.option('--verbose', '-v', is_flag=True,
-              help="Verbose output")
+
+@click.command(
+    help="Resolve incidents that don't have a matching alert in Alertmanager"
+)
+@click.option(
+    "--config", "config_path", type=click.Path(exists=True), help="Path to config file"
+)
+@click.option(
+    "--dry-run", "-d", is_flag=True, help="Print which actions would be taken"
+)
+@click.option("--verbose", "-v", is_flag=True, help="Verbose output")
 def main(config_path, dry_run, verbose):
     config["VERBOSE"] = verbose
-    
+
     if config_path is None:
         config_path = os.environ["PROM_ARGUS_SETTINGS"]
 
@@ -70,16 +78,16 @@ def main(config_path, dry_run, verbose):
     load_config(config_path)
 
     argus_client = pyargus.client.Client(
-        api_root_url=config["ARGUS_API_URL"],
-        token=config["ARGUS_API_TOKEN"])
+        api_root_url=config["ARGUS_API_URL"], token=config["ARGUS_API_TOKEN"]
+    )
 
-    vprint("Retrieving current alerts from AlertManager")
+    vprint("Retrieving current alerts from Alertmanager")
     vprint(f"  URL: {config["ARGUS_SYNC_ALERTMANAGER_URL"]}")
 
     alerts = get_am_alerts()
     # Since we only care about the fingerprints, turn the
     # list of alerts into a set of fingerprints
-    fingerprints = { a["fingerprint"] for a in alerts }
+    fingerprints = {a["fingerprint"] for a in alerts}
     vprint(f"Got {len(fingerprints)} alerts")
 
     vprint("Retrieving open incidents from Argus")
@@ -91,7 +99,8 @@ def main(config_path, dry_run, verbose):
         open=True,
         stateful=True,
         source__name__in=config["ARGUS_SYNC_SOURCE_NAME"],
-        duration__gte=config["ARGUS_SYNC_RESOLVE_MIN_AGE"])
+        duration__gte=config["ARGUS_SYNC_RESOLVE_MIN_AGE"],
+    )
 
     missing = []
 
@@ -118,9 +127,11 @@ def main(config_path, dry_run, verbose):
             argus_client.resolve_incident(
                 incident=i.pk,
                 timestamp=utc_now,
-                description="Automatically resolved by argus_sync")
+                description="Automatically resolved by argus_sync",
+            )
 
     return 0
+
 
 if __name__ == "__main__":
     exit(main())
