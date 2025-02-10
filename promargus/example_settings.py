@@ -28,3 +28,19 @@ ARGUS_API_TOKEN = "secret"
 #     "bizz",
 #     "buzz",
 # ]
+
+
+#### argus-sync settings ####
+# == Required ==
+# URL for the alertmanager that feeds promargus
+ARGUS_SYNC_ALERTMANAGER_URL = "https://example.com/api/v2"
+
+# == Optional ==
+# Name of the source assigned to promargus
+# Default: "prometheus"
+# ARGUS_SYNC_SOURCE_NAME = "prometheus"
+
+# == Optional ==
+# Minimum age of incidents to resolve when syncing, in minutes
+# Default: 10 (minutes)
+# ARGUS_SYNC_RESOLVE_MIN_AGE = 10
