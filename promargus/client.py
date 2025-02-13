@@ -1,7 +1,7 @@
 from pyargus.client import Client
 from pyargus.models import Incident, Event
 
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from flask import current_app
 
 import promargus.parser
@@ -72,7 +72,7 @@ def update_incident(client, incident, parsed_alert):
     )
     event = Event(
         description=parsed_alert["description"],
-        timestamp=datetime.now(UTC),
+        timestamp=datetime.now(timezone.utc),
         type="OTH",
     )
     client.post_incident_event(incident, event)
