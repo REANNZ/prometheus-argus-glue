@@ -1,5 +1,5 @@
 python-dateutil
 Flask
-argus-api-client
+argus-api-client~=0.6.0
 gunicorn
 werkzeug
